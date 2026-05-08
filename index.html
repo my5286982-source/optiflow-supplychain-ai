@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OptiFlow AI | إدارة مخزون ذكية</title>
+    <meta
+      name="description"
+      content="لوحة بسيطة لإدارة المخزون والمشتريات باستخدام وكلاء ذكاء اصطناعي."
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">OF</div>
+          <div>
+            <h1>OptiFlow AI</h1>
+            <p id="businessName">مطعم رز وبهارات</p>
+          </div>
+        </div>
+        <div class="topbar-actions" aria-label="system status">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span data-i18n="liveMode">نظام يعمل الآن</span>
+          <strong id="clockText">--:--</strong>
+          <label class="sr-only" for="languageSelect" data-i18n="languageLabel">اللغة</label>
+          <select id="languageSelect" class="language-select" aria-label="Language">
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="control-rail" aria-label="simulation controls">
+          <div class="control-group">
+            <label for="profileSelect" data-i18n="profileLabel">النشاط</label>
+            <select id="profileSelect"></select>
+          </div>
+
+          <div class="control-group">
+            <label for="scenarioSelect" data-i18n="scenarioLabel">حالة السوق</label>
+            <select id="scenarioSelect"></select>
+          </div>
+
+          <div class="metric-slider">
+            <div>
+              <label for="autonomyRange" data-i18n="autonomyLabel">قوة القرار</label>
+              <strong><span id="autonomyValue">70</span>%</strong>
+            </div>
+            <input id="autonomyRange" type="range" min="30" max="95" value="70" />
+          </div>
+
+          <div class="metric-slider">
+            <div>
+              <label for="trendRange" data-i18n="trendLabel">قوة الطلب</label>
+              <strong><span id="trendValue">68</span>%</strong>
+            </div>
+            <input id="trendRange" type="range" min="0" max="100" value="68" />
+          </div>
+
+          <div class="metric-slider">
+            <div>
+              <label for="budgetRange" data-i18n="budgetLabel">ميزانية الشراء</label>
+              <strong><span id="budgetValue">24,000</span> <span data-i18n="currency">&#x20C1;</span></strong>
+            </div>
+            <input id="budgetRange" type="range" min="8000" max="45000" value="24000" step="1000" />
+          </div>
+
+          <div class="metric-slider">
+            <div>
+              <label for="storageRange" data-i18n="storageLabel">سعة التخزين</label>
+              <strong><span id="storageValue">78</span>%</strong>
+            </div>
+            <input id="storageRange" type="range" min="45" max="100" value="78" />
+          </div>
+
+          <div class="command-row">
+            <button class="primary-command" id="runBtn" type="button" data-i18n="runDecision">احسب القرار</button>
+            <button class="ghost-command" id="approveBtn" type="button" data-i18n="approveOrders">اعتمد الطلبات</button>
+            <button
+              class="icon-command"
+              id="resetBtn"
+              type="button"
+              data-i18n-title="reset"
+              title="إعادة ضبط"
+              aria-label="إعادة ضبط"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12a8 8 0 1 0 2.34-5.66M4 5v5h5" />
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <section class="kpi-grid" aria-label="decision indicators">
+          <article class="kpi-card">
+            <span data-i18n="riskTitle">أصناف قد تنفد</span>
+            <strong id="riskKpi">0</strong>
+            <small id="riskMeta">0 صنف يحتاج متابعة</small>
+          </article>
+          <article class="kpi-card">
+            <span data-i18n="purchaseTitle">قيمة الشراء</span>
+            <strong id="purchaseKpi">0 &#x20C1;</strong>
+            <small id="budgetMeta">ضمن الميزانية</small>
+          </article>
+          <article class="kpi-card">
+            <span data-i18n="wasteTitle">هدر يمكن تفاديه</span>
+            <strong id="wasteKpi">0 &#x20C1;</strong>
+            <small data-i18n="wasteMeta">خصم أو استخدام بديل</small>
+          </article>
+          <article class="kpi-card">
+            <span data-i18n="serviceTitle">جاهزية العمل</span>
+            <strong id="serviceKpi">0%</strong>
+            <small id="serviceMeta">ثقة القرار 0%</small>
+          </article>
+        </section>
+
+        <section class="main-grid">
+          <article class="panel brain-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">OptiFlow Brain</span>
+                <h2 id="brainTitle" data-i18n="brainDefault">ملخص القرار</h2>
+              </div>
+              <span id="confidenceBadge" class="status-badge">ثقة 0%</span>
+            </div>
+            <p id="brainSummary" class="brain-summary"></p>
+            <div class="flow-map" aria-label="supply flow">
+              <svg viewBox="0 0 760 220" role="img" aria-labelledby="flowTitle">
+                <title id="flowTitle">تدفق المورد والمخزون والطلب</title>
+                <defs>
+                  <marker id="arrowHead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+                    <path d="M0,0 L8,4 L0,8 Z" fill="#2d5f73"></path>
+                  </marker>
+                </defs>
+                <g class="flow-link">
+                  <path d="M640 110 C580 55 500 55 440 110" />
+                  <path d="M400 110 C340 165 260 165 200 110" />
+                  <path d="M180 110 C140 80 100 80 62 110" />
+                </g>
+                <g class="flow-node supplier-node">
+                  <rect x="590" y="60" width="120" height="96" rx="8" />
+                  <text x="650" y="100" id="supplierNodeLabel">المورد</text>
+                  <text x="650" y="126" id="supplierFlowText">0</text>
+                </g>
+                <g class="flow-node inventory-node">
+                  <rect x="330" y="60" width="130" height="96" rx="8" />
+                  <text x="395" y="100" id="inventoryNodeLabel">المخزون</text>
+                  <text x="395" y="126" id="inventoryFlowText">0%</text>
+                </g>
+                <g class="flow-node demand-node">
+                  <rect x="58" y="60" width="130" height="96" rx="8" />
+                  <text x="123" y="100" id="demandNodeLabel">الطلب</text>
+                  <text x="123" y="126" id="demandFlowText">+0%</text>
+                </g>
+              </svg>
+            </div>
+          </article>
+
+          <article class="panel agents-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow" data-i18n="agentEyebrow">وكلاء النظام</span>
+                <h2 data-i18n="agentTitle">ما الذي يحدث؟</h2>
+              </div>
+            </div>
+            <div id="agentList" class="agent-list"></div>
+          </article>
+
+          <article class="panel orders-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow" data-i18n="ordersEyebrow">طلبات شراء</span>
+                <h2 data-i18n="ordersTitle">جاهزة للمراجعة</h2>
+              </div>
+              <span id="orderCount" class="status-badge">0</span>
+            </div>
+            <div id="orderList" class="order-list"></div>
+          </article>
+        </section>
+
+        <section class="analytics-grid">
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">Forecast</span>
+                <h2 data-i18n="forecastTitle">توقع الطلب</h2>
+              </div>
+            </div>
+            <canvas id="demandCanvas" width="680" height="300"></canvas>
+          </article>
+
+          <article class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">Inventory</span>
+                <h2 data-i18n="coverageTitle">أيام التغطية</h2>
+              </div>
+            </div>
+            <canvas id="coverageCanvas" width="680" height="300"></canvas>
+          </article>
+        </section>
+
+        <section class="info-grid">
+          <article class="panel data-help-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow" data-i18n="dataEyebrow">شرح البيانات</span>
+                <h2 data-i18n="dataTitle">ماذا تعني الأرقام؟</h2>
+              </div>
+            </div>
+            <p id="profileSummary" class="profile-summary"></p>
+            <ul id="dataHelpList" class="data-help-list"></ul>
+          </article>
+
+          <article class="panel add-item-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow" data-i18n="addEyebrow">إضافة صنف</span>
+                <h2 data-i18n="addTitle">أدخل صنف جديد</h2>
+              </div>
+            </div>
+            <p class="form-help" data-i18n="addHelp">
+              سيتم حفظ الصنف في هذا المتصفح فقط، ويمكنك حذفه من زر مسح الأصناف المضافة.
+            </p>
+            <form id="addItemForm" class="add-item-form">
+              <label>
+                <span data-i18n="itemName">اسم الصنف</span>
+                <input id="newItemName" type="text" required />
+              </label>
+              <label>
+                <span data-i18n="category">الفئة</span>
+                <select id="newItemCategory" required></select>
+              </label>
+              <label>
+                <span data-i18n="unit">الوحدة</span>
+                <input id="newItemUnit" type="text" value="كرتون" required />
+              </label>
+              <label>
+                <span data-i18n="stock">المخزون الحالي</span>
+                <input id="newItemStock" type="number" min="0" value="50" required />
+              </label>
+              <label>
+                <span data-i18n="dailyNeed">الاحتياج اليومي</span>
+                <input id="newItemDailyDemand" type="number" min="1" value="10" required />
+              </label>
+              <label>
+                <span data-i18n="deliveryTime">وقت التوريد بالساعة</span>
+                <input id="newItemLeadTime" type="number" min="1" value="12" required />
+              </label>
+              <label>
+                <span data-i18n="shelfLife">مدة الصلاحية بالأيام</span>
+                <input id="newItemShelfLife" type="number" min="1" value="30" required />
+              </label>
+              <label>
+                <span data-i18n="reorderPoint">حد إعادة الطلب</span>
+                <input id="newItemReorderPoint" type="number" min="1" value="25" required />
+              </label>
+              <label>
+                <span data-i18n="unitCost">تكلفة الوحدة</span>
+                <input id="newItemUnitCost" type="number" min="0" step="0.1" value="10" required />
+              </label>
+              <label>
+                <span data-i18n="saleImpact">أهمية الصنف</span>
+                <input id="newItemImpact" type="number" min="1" max="100" value="30" required />
+              </label>
+              <div class="form-actions">
+                <button class="primary-command" type="submit" data-i18n="addItem">إضافة الصنف</button>
+                <button class="ghost-command" id="clearAddedBtn" type="button" data-i18n="clearAdded">
+                  مسح الأصناف المضافة
+                </button>
+              </div>
+            </form>
+          </article>
+        </section>
+
+        <section class="inventory-section">
+          <div class="inventory-toolbar">
+            <div>
+              <span class="eyebrow" data-i18n="inventoryEyebrow">المخزون</span>
+              <h2 data-i18n="inventoryTitle">قائمة الأصناف</h2>
+            </div>
+            <div class="table-controls">
+              <input id="searchInput" type="search" data-i18n-placeholder="searchPlaceholder" placeholder="ابحث عن صنف" />
+              <select id="statusFilter" aria-label="status filter">
+                <option value="all" data-i18n="allStatuses">كل الحالات</option>
+                <option value="critical" data-i18n="critical">حرج</option>
+                <option value="watch" data-i18n="watch">انتبه</option>
+                <option value="healthy" data-i18n="healthy">مستقر</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th data-i18n="tableItem">الصنف</th>
+                  <th data-i18n="tableCategory">الفئة</th>
+                  <th data-i18n="tableStock">المخزون</th>
+                  <th data-i18n="tableForecast">احتياج 72 ساعة</th>
+                  <th data-i18n="tableCoverage">التغطية</th>
+                  <th data-i18n="tableStatus">الحالة</th>
+                  <th data-i18n="tableDecision">قرار النظام</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="log-panel" aria-label="system log">
+          <div>
+            <span class="eyebrow" data-i18n="logEyebrow">سجل النظام</span>
+            <h2 data-i18n="logTitle">آخر الأحداث</h2>
+          </div>
+          <ol id="activityLog"></ol>
+        </section>
+      </main>
+    </div>
+
+    <script src="assets/js/data.js"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
